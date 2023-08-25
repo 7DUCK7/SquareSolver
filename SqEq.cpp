@@ -1,44 +1,41 @@
 #include "TXlib.h"
-#include <math.h>
-#include <stdio.h>
 #include "FUNCS.h"
+#include <stdio.h>
 #include "func.cpp"
 #include "test.cpp"
-
 int main()
 {
     printf ("# Программа для решения квадратного уравнения\n");
 
-    for(int i = 0; i < nTests; i++)
+    for(int i = 0; i < nTESTS; i++)
     {
         TestOne(&allData[i]);
     }
 
-    int r = 2;
+    int where_to_read_from = 0;
     double a = 0, b = 0, c = 0;
-    // check correctness +
 
     printf("Выберете способ которым хотите ввести данные:\n");
     printf("1 - вручную\n");
-    printf("Любая другой символ - через файл\n");
-    scanf("%d", &r);
-    if (r == 1)
-        ReadManual (&a, &b, &c);
-    else
-        ReadFile (&a, &b, &c);
+    printf("Любой другой символ - через файл\n");
+
+    FILE* how_to_read = stdin;
+    scanf("%d", &where_to_read_from);
+
+    how_to_read_coeffs(&a, &b, &c, where_to_read_from, how_to_read);
 
     double x1 = 0, x2 = 0;
     int nROOTS = SolveSqrEq (a, b, c, &x1, &x2);
 
     switch (nROOTS)
     {
-    case 0: printf ("Решений нет");
+    case ZERO: printf ("Решений нет");
             break;
-    case 1: printf ("x = %lg", x1);
+    case ONE: printf ("x = %lg", x1);
             break;
-    case 2: printf ("x1 = %lg, x2 = %lg", x1, x2);
+    case TWO: printf ("x1 = %lg, x2 = %lg", x1, x2);
             break;
-    case INF_ROOTS: printf("Бесконечное число корней");       // const for inf
+    case INF_ROOTS: printf("Бесконечное число корней");
             break;
     default: printf("main(): ERROR: nROOTS = %d\n", nROOTS);
             return 1;
