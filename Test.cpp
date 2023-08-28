@@ -1,3 +1,8 @@
+#include "TXlib.h"
+#include "FUNCS.h"
+#include <stdio.h>
+#include <math.h>
+
 struct TestData
 {
     double a, b, c;
