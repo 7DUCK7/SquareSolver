@@ -1,4 +1,8 @@
+#include "TXlib.h"
+#include "FUNCS.h"
+#include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 int CompareWithZero (double a)
 {
@@ -12,22 +16,24 @@ int SolveLinearEq (double b, double c, double* x1)
 {
     if (CompareWithZero(b))
     {
-        return (CompareWithZero(c))? INF_ROOTS : 0;
+        return (CompareWithZero(c)) ? INF_ROOTS : 0;          //change cmpwthzr name
     }
     else
     {
-     *x1 = -c / b;
-     return 1;
+        *x1 = -c / b;
+        return 1;
     }
 }
 
-int SolveSqrEq (double a, double b, double c, double* x1, double* x2)    // if for x pointer
+int SolveSqrEq (double a, double b, double c, double* x1, double* x2)
 {
-    // fix indentation
-    // float comparison
+    assert(isfinite(a));
+    assert(isfinite(b));
+    assert(isfinite(c));
+
     if (x1 == 0 || x2 == 0)
     {
-        printf("Введены некорректные указатели для корней уравнения\n");
+        printf("Введены некорректные указатели для корней уравнения\n");  // __LINE__
     }
     else
     {
@@ -63,44 +69,30 @@ int SolveSqrEq (double a, double b, double c, double* x1, double* x2)    // if f
     return 0;
 
 }
-/*
-int ReadManual (double* a_pointer, double* b_pointer, double* c_pointer)
-{
-    // check correctness +
-    printf ("# Введите коэффициенты уравнения\n");
-    while (fscanf (stdin, "%lg %lg %lg", a_pointer, b_pointer, c_pointer) != 3)    // correctness check
-    {
-        while (getchar() != '\n')
-            ;
-        printf("Введены неверные данные (a= %lg b= %lg c= %lg)\n", *a_pointer, *b_pointer, *c_pointer);
-    }
-    return 1;
-}
 
-int ReadFile (double* a_pointer, double* b_pointer, double* c_pointer)
+int Read (double* a_pointer, double* b_pointer, double* c_pointer, FILE* chosen_type_of_input)          //fixxxxxxxxxxxx
 {
-    FILE * file = fopen("RT.txt", "r");
+    int num_of_input = 1;
+    int successful_fscanfs = 0;
 
-    while (fscanf(file, "a=%lg b=%lg c=%lg", a_pointer, b_pointer, c_pointer) != 3)
+    while (successful_fscanfs != 3)
     {
-        while (getchar() != '\n')
-            ;
-        printf("Введены неверные данные (a= %lg b= %lg c= %lg)\n", *a_pointer, *b_pointer, *c_pointer);
+        successful_fscanfs = fscanf (chosen_type_of_input, "%lg %lg %lg", a_pointer, b_pointer, c_pointer);
+        if (successful_fscanfs != 3)
+        {
+
+            printf("Введены неверные данные в %d попытке (a=%lg b=%lg c=%lg). Повторите попытку:\n",
+                num_of_input, *a_pointer, *b_pointer, *c_pointer);
+            *a_pointer = 0; *b_pointer = 0; *c_pointer = 0;
+        }
+
+        num_of_input += 1;
+        buffer_clean(chosen_type_of_input);
+        if (successful_fscanfs == 3)
+            break;
     }
 
-    fclose(file);
-    return 1;
-}  */
-
-int Read (double* a_pointer, double* b_pointer, double* c_pointer, FILE* how_to_read_ptr)
-{
-    while (fscanf (how_to_read_ptr, "%lg %lg %lg", a_pointer, b_pointer, c_pointer) != 3)    // correctness check
-    {
-        while (getchar() != '\n')
-            ;
-        printf("Введены неверные данные (a=%lg b=%lg c=%lg). Повторите попытку:\n", *a_pointer, *b_pointer, *c_pointer);
-    }
-    return 1;
+    return num_of_input - 1;
 }
 
 int CompareDoubleNumbers(double number1, double number2)
@@ -112,32 +104,129 @@ int CompareDoubleNumbers(double number1, double number2)
 
 }
 
-
-int how_to_read_coeffs(double* a_ptr, double* b_ptr, double* c_ptr, int where_to_read_from, FILE* how_to_read)
+void Print_the_answer(int nROOTS, double x1, double x2)
 {
-    if (where_to_read_from == 1)
+    switch (nROOTS)
     {
-        printf ("# Введите коэффициенты уравнения\n");
-        while (getchar() != '\n')
-            ;
-        Read (a_ptr, b_ptr, c_ptr, how_to_read);
-        return 1;
-    }
-    else
-    {
-        char file_name[40] = {};
-        printf("Введите название файла с расширением:\n");
-        scanf("%s", file_name);
-        while ((how_to_read = fopen(file_name,"r")) == NULL)
-        {
-            printf("Имя файла введено неверно, повторите попытку:\n");
-            while (getchar() != '\n')
-                ;
-            scanf("%s", file_name);
-        }
-        Read (a_ptr, b_ptr, c_ptr, how_to_read);
-        return 2;
-
+    case ZERO:
+            printf ("Решений нет\n");
+            break;
+    case ONE:
+            printf ("x = %lg\n", x1);
+            break;
+    case TWO:
+            printf ("x1 = %lg, x2 = %lg\n", x1, x2);
+            break;
+    case INF_ROOTS:
+            printf("Бесконечное число корней\n");
+            break;
+    default:
+            printf("main(): ERROR: nROOTS = %d\n", nROOTS);
     }
 
 }
+
+int get_file_name(char* file_name)
+{
+    buffer_clean(stdin);
+    printf("Введите название файла с расширением:\n");
+    scanf("%s",file_name);;
+    while ((fopen(file_name,"r")) == NULL)
+        {
+            printf("Имя файла введено неверно, повторите попытку:\n");
+            buffer_clean(stdin);
+            scanf("%s",file_name);;                                              //write this func urself using for i...
+        }
+    return 1;
+}
+
+
+int get_type_of_the_input_from_user(INPUT_TYPE* where_to_read_from)
+{
+    scanf("%d", where_to_read_from);
+    while((*where_to_read_from != FROM_FILE) && (*where_to_read_from != FROM_CONSOLE))
+    {
+        buffer_clean(stdin);
+        printf("Введена неверная команда\n"
+               "Попробуйте заново\n");
+        scanf("%d", where_to_read_from);
+    }
+    return 1;
+}
+
+int Perform()
+{
+        INPUT_TYPE where_to_read_from = NOT_CHOSEN_YET;
+        FILE* chosen_type_of_input;      //fix names of variables
+        char file_name[FILE_NAME_SIZE] = "";
+        double a = 0, b = 0, c = 0;
+
+        first_msg();
+
+        get_type_of_the_input_from_user(&where_to_read_from);
+
+        int num_of_successful_solution = Read(&a, &b, &c, choose_how_to_read(where_to_read_from, file_name, chosen_type_of_input));
+
+        printf("В ходе попытки %d:\n", num_of_successful_solution);
+
+        double x1 = 0, x2 = 0;
+        int nROOTS = SolveSqrEq (a, b, c, &x1, &x2);
+
+        Print_the_answer(nROOTS, x1, x2);
+        return 3;
+}
+
+FILE* choose_how_to_read(INPUT_TYPE where_to_read_from, char* file_name, FILE* chosen_type_of_input)
+{
+    if (where_to_read_from == FROM_FILE)
+    {
+        get_file_name(file_name);
+        chosen_type_of_input = fopen(file_name,"r");
+    }
+    else
+    {
+        chosen_type_of_input = stdin;
+        printf("Введите коэффициенты уравнения\n");
+    }
+    return chosen_type_of_input;
+}
+
+int Mystrcmp(const char* str1, const char* str2)
+{
+    int j = 0;
+    while(str1[j] != '\0' || str2[j] != '\0')
+    {
+        if (str1[j] != str2[j])
+        {
+            return 1;
+        }
+        j += 1;
+    }
+    return 0;
+}
+
+void buffer_clean(FILE* chosen_type_of_input)
+{
+    while (getc(chosen_type_of_input) != '\n')
+                    ;
+}
+
+void first_msg()
+{
+    printf ("# Программа для решения квадратного уравнения\n");
+    printf("Выберете способ которым хотите ввести данные:\n");
+    printf("1 - вручную\n");
+    printf("2 - через файл\n");
+}
+
+/*
+void scan_file_name(char* name)
+{
+    for (int i = 0; i < FILE_NAME_SIZE; i++)
+    {
+        name[i] = getchar();
+        if (name[i] == '\n')
+            break;
+    }
+}
+*/
