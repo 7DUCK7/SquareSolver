@@ -83,13 +83,13 @@ int SolveSqrEq (double a, double b, double c, double* x1, double* x2)
 
 int Read (double* a_pointer, double* b_pointer, double* c_pointer, FILE* chosen_type_of_input)          //fixxxxxxxxxxxx
 {
+    int num_of_input = 1;
     if (a_pointer == 0 || b_pointer == 0 || c_pointer == 0 || chosen_type_of_input == 0)
     {
         printf("Введены неверные указатели в %s в функции Read. Строка %d.\n", __FILE__, __LINE__);
     }
     else
     {
-        int num_of_input = 1;
         int successful_fscanfs = 0;
 
         while (successful_fscanfs != 3)
